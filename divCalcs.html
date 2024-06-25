@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="util.js?v=1.0.1"></script>
+<script type="text/javascript" src="../jquery-3.5.0.min.js"></script>
+</head>
+<body onload="loadit();" style="background-color:SteelBlue" >
+	<style>
+		.calcs {
+		  font-family: "PT Sans",Arial Narrow,Arial,Helvetica,sans-serif;
+		  font-size: 1.3em;
+		  color: white;
+		}	
+		.trendsSmallIcon, .trendImgIcon{
+			width:100%;
+			max-width:25px;
+		}
+		.trendsSmallIcon{
+			padding-right: 15px;
+		}
+	</style>
+	<table style="width:100%;margin:0 auto">
+		<tbody><tr>
+			<td style="width:100% ; text-align:center; font-variant: small-caps; font-weight: bold;" class="calcs">
+					<div id="trendsTImgDiv"><img src="/tendencias/icons/dewpoint.png" class="trendImgIcon">
+											<img src="/tendencias/icons/taparente.png" class="trendImgIcon">
+											<img src="/tendencias/icons/rain.png" class="trendImgIcon">
+											<img src="/tendencias/icons/cloud-base.png" class="trendImgIcon"></div>
+				</td>		
+		</tr></tbody>
+	</table>		
+			
+	<table style="width:98%;margin:0 auto">
+		<tbody>
+		<tr> 
+			<td style="text-align:right;width:65%; color: white;">
+				<div class="calcs">Punto de roc&iacute;o:</div>			
+			</td>
+			<td style="text-align:right;width:35%; color: white;">
+				<div id="calcDew" class="calcs">-99.9 ºC</div>
+			</td>
+		</tr>
+		<tr> 
+			<td style="text-align:right; color: white;">
+				<div class="calcs">Temp. aparente:</div>			
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="calcSens" class="calcs">-99.9 ºC</div>
+			</td>
+		</tr>		
+		<tr> 
+			<td style="text-align:right; color: white;">
+				<div class="calcs">Precip. acum.:</div>			
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="calcAgua" class="calcs">-99.9 mm</div>
+			</td>
+		</tr>			
+		<tr> 
+			<td style="text-align:right; color: white;">
+				<div class="calcs">Base nubes:</div>			
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="calcNube" class="calcs">-99.9 Mt</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+<script>
+/**
+ * Get apparent temperature. Use wind chill or heat index.
+ *
+ * @param Tc temperature in celsius
+ * @param Vkmh wind speed in km/h
+ * @param R relative humidity
+ * @param P pressure
+ * @returns {number}
+ */
+function apparentTemperature(Tc, Vkmh, R, P) {
+    if (Tc < 10) {
+        return this.windChill(Tc, Vkmh);
+    }
+    return this.heatIndex(Tc, R, P);
+}
+
+/**
+ * Wind chill calculation.
+ * @see https://en.wikipedia.org/wiki/Wind_chill
+ *
+ * @param Tc temperature in celsius
+ * @param Vkmh wind speed in km/h
+ * @returns {number}
+ */
+function windChill(Tc, Vkmh) {
+	Tc=Tc/1; Vkmh=Vkmh/1;
+    if (Tc >= 10)  return Tc;
+
+    var Rc;
+    if (Vkmh >= 4.8 && Vkmh <= 177) {
+        Rc = 13.12 + 0.6215 * Tc + (0.3965 * Tc - 11.37) * Math.pow(Vkmh, 0.16);
+    } else if (Vkmh < 4.8) {
+        Rc = Tc + 0.2 * (0.1345 * Tc - 1.59) * Vkmh;
+    } else {
+        Rc = Tc;
+    }
+    return Rc;
+}
+/**
+ * Heat index calculation.
+ * @see https://en.wikipedia.org/wiki/Heat_index
+ *
+ * @param Tc temperature in celsius
+ * @param R relative humidity
+ * @param P pressure
+ * @returns {number}
+ */
+function heatIndex(Tc, R, P) {
+	Tc=Tc/1; R=R/1; P=P/1;
+    if (P < 16) { return Tc; }
+    if (Tc < 27 || R < 0.40 || dewPoint(Tc, R) < 12) { return Tc; }
+
+    var c1 = -8.784695;
+    var c2 = 1.61139411;
+    var c3 = 2.338549;
+    var c4 = -0.14611605;
+    var c5 = -1.2308094 * 0.01;
+    var c6 = -1.6424828 * 0.01;
+    var c7 = 2.211732 * 0.001;
+    var c8 = 7.2546 * 0.0001;
+    var c9 = -3.582 * 0.000001;
+    var HI = c1 + c2 * Tc + c3 * R + c4 * Tc * R + c5 * Tc * Tc + c6 * R * R + c7 * Tc * Tc * R + c8 * Tc * R * R + c9 * Tc * Tc * R * R;
+    return HI;
+}
+/**
+ * Dew point calculation.
+ * @see https://en.wikipedia.org/wiki/Dew_point
+ *
+ * @param Tc temperature in celsius
+ * @param R relative humidity
+ * @returns {number}
+ */
+function dewPoint(Tc, R) {
+	R=R/1; Tc=Tc/1;
+    if (Tc < 0 || Tc > 60) { return Tc; }
+    if (R < 0.01 || R > 1) { return Tc; }
+    
+    var a = 17.27;
+    var b = 237.7;
+    var alphaTR = ((a * Tc) / (b + Tc)) + Math.log(R);
+    var Tr = (b * alphaTR) / (a - alphaTR);
+    /*if (Tr < 0 || Tr > 50) {
+        return Tc;
+    }*/
+    return Tr;
+}
+
+function calculos(){
+  $("#calcDew").text("");
+  $("#calcSens").text("");
+  $("#calcAgua").text("");
+  $("#calcNube").text("");
+		
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var myObj = JSON.parse(this.responseText);
+      var Jtemp = myObj.Temp;
+      var Jhum = myObj.Hum/100;
+      var Jpres = myObj.Pres;
+      var Jvie = myObj.Viento * 3.6;
+      var Jagua = myObj.Precip;
+		$("#calcDew").text(dewPoint(Jtemp, Jhum).toFixed(1) +" ºC");
+		$("#calcSens").text(apparentTemperature(Jtemp, Jvie, Jhum, Jpres).toFixed(1) +" ºC");
+		$("#calcAgua").text(Jagua +" mm");
+		// https://en.wikipedia.org/wiki/Cloud_base
+		$("#calcNube").text( (((Jtemp - dewPoint(Jtemp, Jhum)) / 8) * 1000).toFixed(0) + " Mt" );
+    }
+  }; 
+  xhr.open("GET", "http://192.168.1.30/enl-tmp/meteoahora.json", true);
+  xhr.send();
+}
+
+function loadit(){
+	calculos();
+	setInterval(function(){ calculos(); }, 10000);
+}
+
+</script>
+</body>
+</html> 
+

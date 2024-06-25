@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+.wrapper {
+  height: 600px;
+  position: relative;
+  width: 100%;
+}
+.izq {
+  width: 90%;
+  background-color: blue;
+  height: 100%;
+  display:inline-block;
+  float: left;
+}
+.izq-top {
+  height: 40%;
+  width: 100%;
+  background-color: yellow;
+}
+.izq-abajo {
+  height: 60%;
+  width: 100%;
+  background-color: black;
+}
+.div-calcs {
+    height: 100%;
+    width: 30%;
+   display: inline;
+   background-color: LightGray;
+   float: left;
+}
+.izq-log {
+    height: 100%;
+    width: 70%;
+    background-color: Gray;
+    float: left;
+}
+.der {
+  width: 10%;
+  background-color: white;
+  height: 100%;
+  display: inline-block;
+}
+
+.meteolog
+{height: 100%; width: 100%; border: none; margin: 0; padding: 0; }
+.indica
+{text-align: center; margin-left:auto; margin-right:auto; height: 100%; width: 100%; border: none; margin: 0; padding: 0;}
+
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="izq">
+    <div class="izq-top">
+		<iframe src="/indicadores/indicadores.html" title="grupo" class="meteolog"></iframe>     
+    </div>
+    <div class="izq-abajo">
+		<div class="izq-log">
+				<iframe src="/tendencias/divTendencias.html" title="log" class="meteolog"></iframe>    
+		</div> 
+		<div class="div-calcs">
+			<iframe src="/indicadores/divCalcs.html" title="grupo" class="meteolog"></iframe>				   
+		</div>  
+	</div>
+  </div>
+  <div class="der">
+
+  </div>
+</div>
+</body>
+</html> 
+
+
+

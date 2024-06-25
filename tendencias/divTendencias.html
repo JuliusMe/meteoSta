@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="util.js?v=1.0.1"></script>
+</head>
+<body onload="loadit();" style="background-color:SlateBlue" >
+<div class="block" id="trendsBlock">	
+<script type="text/javascript" src="../jquery-3.5.0.min.js"></script>
+<script type="text/javascript" src="jquery.sparkline.min.js"></script>
+	<style>
+		.trendsSmallIcon, .trendImgIcon{
+			width:100%;
+			max-width:25px;
+		}
+		.trendsSmallIcon{
+			padding-right: 15px;
+		}
+		.trendsTimeIcon{
+			width: 100%;
+			max-width:40px;
+			cursor: pointer;
+			opacity: 0.8;
+			padding: 1px;
+			border-radius: 10px;
+		}
+		.trendsTimeIcon:hover{
+			opacity: 1;
+		}
+
+		.trendsdiff {
+		  font-family: "PT Sans",Arial Narrow,Arial,Helvetica,sans-serif;
+		  font-size: 1.3em;
+		  color: white;
+		}
+		.trendstit {
+		  font-family: "PT Sans",Arial Narrow,Arial,Helvetica,sans-serif;
+		  font-size: 1.3em;
+		  color: white;
+		}
+
+	</style>
+
+<table style="width:100%;margin:0 auto">
+<tbody><tr>
+<td>
+
+	<table style="width:98%;margin:0 auto"> <!-- 3 columnas: 1 icono - 2 tendencia - 3 (max-min)  -->
+		<tbody>
+		<tr> <!-- Titulos -->
+			<td style="width:15%;height:30px; text-align:left" class="trendstit">
+				Hora
+			<td style="width:50%">				
+				<div id="trendsHora" class="trendsdiff" >   
+					Horas
+				</div>
+			</td>
+			<td style="width:10% ; text-align:center" class="trendstit">
+				<!-- en blanco -->
+			</td>
+			<td style="text-align:right; width:25%"class="trendstit" >
+				Diferencial
+			</td>
+		</tr>		
+		<tr> <!-- Temperatura -->
+			<td style="width:15%;height:30px">
+				<img src="icons/temp.png" class="trendsSmallIcon tooltip tooltipstered">
+			</td>
+			<td style="width:50%">
+				<div id="trendsTDiv">
+				<canvas style="display: inline-block; width: 330px; height: 30px; vertical-align: top;" width="330" height="30"></canvas>
+				</div>
+			</td>
+			<td style="width:10%">
+				<div id="trendsTImgDiv"><img src="icons/trendDown.png" class="trendImgIcon"></div>
+			</td>
+			<td style="text-align:right;width:25%; color: white;">
+				<div id="trendsTNumber" class="trendsdiff">-99.9 ºC</div>
+			</td>
+		</tr>
+		<tr> <!-- Humedad -->
+			<td style="height:30px">
+				<img src="icons/humidity.png" class="trendsSmallIcon tooltip tooltipstered">
+			</td>
+			<td>
+				<div id="trendsHDiv">
+				<canvas style="display: inline-block; width: 330px; height: 30px; vertical-align: top;" width="330" height="30"></canvas>
+				</div>
+			</td>
+			<td>
+				<div id="trendsHImgDiv"><img src="icons/trendUp.png" class="trendImgIcon"></div>
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="trendsHNumber" class="trendsdiff">+99 %</div>
+			</td>
+		</tr>
+		<tr> <!-- Presion -->
+			<td style="height:30px">
+				<img src="icons/pressure.png" class="trendsSmallIcon tooltip tooltipstered">
+			</td>
+			<td>
+				<div id="trendsPDiv">
+				<canvas style="display: inline-block; width: 330px; height: 30px; vertical-align: top;" width="330" height="30"></canvas>
+				</div>
+			</td>
+			<td>
+				<div id="trendsPImgDiv"><img src="icons/trendUp.png" class="trendImgIcon"></div>
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="trendsPNumber" class="trendsdiff">+999 hPa</div>
+			</td>
+		</tr>
+		<tr> <!-- Velocidad media de viento -->
+			<td style="height:30px">
+				<img src="icons/wind.png" class="trendsSmallIcon tooltip tooltipstered">
+			</td>
+			<td>
+				<div id="trendsWDiv">  
+					<canvas style="display: inline-block; width: 330px; height: 30px; vertical-align: top;" width="330" height="30"></canvas>
+				</div>
+			</td>
+			<td>
+				<div id="trendsWImgDiv"><img src="icons/trendDown.png" class="trendImgIcon"></div>
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="trendsWNumber" class="trendsdiff">-99 km/h</div>
+			</td>
+		</tr>
+		<tr> <!-- Rachas de viento -->
+			<td style="height:30px">
+				<img src="icons/dgust.png" class="trendsSmallIcon tooltip tooltipstered">
+			</td>
+			<td>
+				<div id="trendsGDiv"> 
+					<canvas style="display: inline-block; width: 330px; height: 30px; vertical-align: top;" width="330" height="30"></canvas>
+				</div>
+			</td>
+			<td>
+				<div id="trendsGImgDiv"><img src="icons/trendDown.png" class="trendImgIcon"></div>
+			</td>
+			<td style="text-align:right; color: white;">
+				<div id="trendsGNumber" class="trendsdiff">-99 km/h</div>
+			</td>
+		</tr>
+		<tr> <!-- Direccion de vento -->
+			<td style="height:30px">
+				<img src="icons/trendNeutral.png" class="trendsSmallIcon tooltip tooltipstered">
+			</td>
+			<td>
+				<div id="trendsDDiv" class="trendsdiff" >   
+					
+				</div>
+			</td>
+			<td>
+			</td>
+			<td style="text-align:right; color: white;">
+				<!-- en blanco -->
+			</td>
+		</tr>
+	</tbody></table>
+</td>
+</tr>
+</tbody></table>	
+
+<script>
+// # stackoverflow.com/questions/30647330/calculate-if-trend-is-up-down-or-stable
+// OJO no usar ** para elevar al cuadrado con versiones antiguas de Jscrpt 
+	function calcTrend(strnumbers){
+	  	var valor = [];
+	  	var posic = [];
+	  	var arr = strnumbers.split(',');
+	  	var total_numbers = arr.length;
+		for (var i in arr) {
+			valor[i] = parseFloat(arr[i]);
+	    	posic[i] = parseFloat(i);
+	  	}
+		var sumLines = 0;
+		var sumNumbers = 0;
+		var sumMix = 0;
+		var squareOfs = 0;
+		for (var i in arr) {
+			sumLines += posic[i];
+			sumNumbers += valor[i];
+			sumMix += posic[i]*valor[i];
+			squareOfs += (posic[i] * posic[i]);
+		}
+		var a = (total_numbers * sumMix) - (sumLines * sumNumbers);
+		var b = (total_numbers * squareOfs) - (sumLines * sumLines);
+		var c = a/b;
+	return(c);
+    }
+
+	function calcDif(strnumbers){
+		var Maxi = -99999;
+		var Mini = 99999;	  	
+	  	var valor = [];		
+	  	var arr = strnumbers.split(',');
+		for (var i in arr) {
+			valor[i] = parseFloat(arr[i]);
+			if(valor[i] > Maxi) { Maxi = valor[i]};
+			if(valor[i] < Mini) {Mini = valor[i]};
+	  	}
+		var Dife =  Maxi - Mini;
+        return (Dife);
+	}
+
+// no se usa, se saca la diferencia en valor absoluto
+	function getSign(number){
+		if(number>0){
+			return "";
+		}
+		else{
+			return "";
+		}
+	}
+	function getTrendImg(number){
+		if(number>0){
+			return "trendUp.png";
+		}
+		else if(number==0){
+			return "trendNeutral.png";
+		}
+		else{
+			return "trendDown.png";
+		}
+	}
+
+	function printTablaDir(strdirs){
+	  	var arr = strdirs.split(',');
+		var total_numbers = arr.length;
+		var tablaD = '<table style="width:100%;margin:0 auto"><tr>';	  	
+		for (var i = 0; i < total_numbers; i++) {
+			tablaD = tablaD + '<td>' + arr[i] + '</td>';
+			if(total_numbers > 15){ i=i+1; };   // despues de las 15 horas de saca los pares	
+		}	  	
+		tablaD = tablaD + '</tr></table>';
+		return tablaD;
+	}
+
+	function printTablaHora(strdirs){
+	  	var arr = strdirs.split(',');
+		var total_numbers = arr.length;
+	  	var tablaD = '<table style="width:100%;margin:0 auto"><tr>';  	
+		for (var i = 0; i < total_numbers; i++) {		
+			tablaD = tablaD + '<td>' + i + '</td>'; 
+			if(total_numbers > 15){ i=i+1; };   // despues de las 15 horas de saca los pares	
+		}	  	
+		tablaD = tablaD + '</tr></table>';
+		return tablaD;
+	}
+
+	function loadit(){
+//		$("#trendsSpinner").css("visibility","initial");
+		$("#trendsTNumber").text("");
+		$("#trendsHNumber").text("");
+		$("#trendsPNumber").text("");
+		$("#trendsWNumber").text("");
+		$("#trendsGNumber").text("");
+		$("#trendsTImgDiv").text("");
+		$("#trendsHImgDiv").text("");
+		$("#trendsWImgDiv").text("");
+		$("#trendsPImgDiv").text("");
+		$("#trendsGImgDiv").text("");
+		$("#trendsHDiv").text("");
+		$("#trendsPDiv").text("");
+		$("#trendsWDiv").text("");
+		$("#trendsGDiv").text("");
+		$("#trendsTDiv").html("");
+//		$("#trendsDDiv").html("");
+		$("#trendsHora").html("");	
+
+		$.ajax({
+			url : "http://192.168.1.30/enl-tmp/tendencias.json",
+			dataType : 'json',
+			success : function (json) {
+
+				trendD = printTablaHora(json['data']['D']); // le pasamos D solo para que cuente cuantos valores hay
+				$("#trendsHora").append(trendD)
+
+				// Temp
+
+				$("#trendsTDiv").text(json['data']['T']);
+				trendT = calcTrend(json['data']['T']);
+				//trendT = json['trend']['T'];
+				trendT = trendT.toFixed(2);
+				AmplT = calcDif(json['data']['T']);
+				AmplT = AmplT.toFixed(1); 
+				$("#trendsTNumber").text(getSign(trendT) + AmplT + " ºC");
+				$("#trendsTImgDiv").html("<img src='icons/"+getTrendImg(trendT)+"' class='trendImgIcon'>");
+
+				$('#trendsTDiv').sparkline('html',{
+					type: 'line',
+					width: '100%',
+					height: '30px',
+					lineColor: '#ffffff',
+					fillColor: null,
+					lineWidth: 1.5,
+					spotColor: false,
+					spotRadius: 3,
+					minSpotColor: '#56aaff',
+					maxSpotColor: '#ff0000',
+					highlightSpotColor: null,
+					highlightLineColor: null,
+					drawNormalOnTop: false,
+					disableInteraction: false,
+				});
+				
+				// Humidity
+				$("#trendsHDiv").text(json['data']['H']);
+				trendH = calcTrend(json['data']['H']);
+				//trendH = json['trend']['H'];
+				trendH = trendH.toFixed(2);
+				AmplH = calcDif(json['data']['H']);
+				AmplH = AmplH.toFixed(1); 
+				$("#trendsHNumber").text(getSign(trendH) + AmplH + " %");
+				$("#trendsHImgDiv").html("<img src='icons/"+getTrendImg(trendH)+"' class='trendImgIcon'>");
+				$('#trendsHDiv').sparkline('html',{
+					type: 'line',
+					width: '100%',
+					height: '30px',
+					lineColor: '#ffffff',
+					fillColor: null,
+					lineWidth: 1.5,
+					spotColor: false,
+					spotRadius: 3,
+					minSpotColor: '#ffff99',
+					maxSpotColor: '#006600',
+					highlightSpotColor: null,
+					highlightLineColor: null,
+					drawNormalOnTop: false,
+					disableInteraction: false,
+				});
+				// Pressure
+				$("#trendsPDiv").text(json['data']['P']);
+				trendP = calcTrend(json['data']['P']);
+				//trendP = json['trend']['P'];
+				trendP = trendP.toFixed(2);
+				AmplP = calcDif(json['data']['P']);
+				AmplP = AmplP.toFixed(1); 
+				$("#trendsPNumber").text(getSign(trendP) + AmplP + " hPa");
+				$("#trendsPImgDiv").html("<img src='icons/"+getTrendImg(trendP)+"' class='trendImgIcon'>");
+				$('#trendsPDiv').sparkline('html',{
+					type: 'line',
+					width: '100%',
+					height: '30px',
+					lineColor: '#ffffff',
+					fillColor: null,
+					lineWidth: 1.5,
+					spotColor: false,
+					spotRadius: 3,
+					minSpotColor: '#ffcc99',
+					maxSpotColor: '#8600b3',
+					highlightSpotColor: null,
+					highlightLineColor: null,
+					drawNormalOnTop: false,
+					disableInteraction: false,
+				});
+				// Wind speed
+				$("#trendsWDiv").text(json['data']['W']);
+				trendW = calcTrend(json['data']['W']);
+//				trendW = json['trend']['W'];
+				trendW = trendW.toFixed(2);
+				AmplW = calcDif(json['data']['W']);
+				AmplW = AmplW.toFixed(1); 
+				$("#trendsWNumber").text(getSign(trendW) + AmplW + " km/h");
+				$("#trendsWImgDiv").html("<img src='icons/"+getTrendImg(trendW)+"' class='trendImgIcon'>");
+				$('#trendsWDiv').sparkline('html',{
+					type: 'line',
+					width: '100%',
+					height: '30px',
+					lineColor: '#ffffff',
+					fillColor: null,
+					lineWidth: 1.5,
+					spotColor: false,
+					spotRadius: 3,
+					minSpotColor: '#cfbfff',
+					maxSpotColor: '#69008c',
+					highlightSpotColor: null,
+					highlightLineColor: null,
+					drawNormalOnTop: false,
+					disableInteraction: false,
+				});
+				// Wind Gust
+				$("#trendsGDiv").text(json['data']['G']);
+				trendG = calcTrend(json['data']['G']);
+				//trendG = json['trend']['G'];
+				trendG = trendG.toFixed(2);
+				AmplG = calcDif(json['data']['G']);
+				AmplG = AmplG.toFixed(1); 
+				$("#trendsGNumber").text(getSign(trendG) + AmplG + " km/h");
+				$("#trendsGImgDiv").html("<img src='icons/"+getTrendImg(trendG)+"' class='trendImgIcon'>");
+				$('#trendsGDiv').sparkline('html',{
+					type: 'line',
+					width: '100%',
+					height: '30px',
+					lineColor: '#ffffff',
+					fillColor: null,
+					lineWidth: 1.5,
+					spotColor: false,
+					spotRadius: 3,
+					minSpotColor: '#cfbfff',
+					maxSpotColor: '#69008c',
+					highlightSpotColor: null,
+					highlightLineColor: null,
+					disableInteraction: false,
+				});
+				// Wind Dir
+//				$("#trendsDDiv").text(json['data']['D']);				
+				trendD = printTablaDir(json['data']['D']);
+				$("#trendsDDiv").append(trendD)
+//				$("#trendsSpinner").css("visibility","hidden");
+//				$(".trendsTimeIcon").css("border","0px solid white");
+//				$(".trendsTimeIcon").css("background","none");
+				//$("#trendImg" + interval).css("border","1px solid #E0E0E0");
+				//$("#trendImg" + interval).css("background","#757575");
+			}
+		})
+	}
+</script>
+</div>
+</div>
+</body>
+</html> 
+
+

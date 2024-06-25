@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+	<meta http-equiv="Pragma" content="no-cache">
+    <meta charset='utf-8' />
+<script src="util.js?v=1.0.2"></script>
+    <title>Chismes</title>
+	<script src="tween-min.js"></script>
+    <script src='steelseries-min.js'></script>
+
+    <script>
+		var Termometro;
+		var Barometro;
+		var Compass;		
+		var Higrometro;
+		var Eolo;
+		var Dimens = 200;
+		
+        function init()
+        {
+		var sectionsVie = [steelseries.Section(0, 20, 'rgba(102, 153, 255, 0.3)'),
+                        steelseries.Section(20, 50, 'rgba(0, 220, 0, 0.3)'),
+                        steelseries.Section(50, 80, 'rgba(220, 220, 0, 0.3)') ];
+                        
+                                    // Initialzing
+            Termometro = new steelseries.Radial('canvastemp', {
+                            gaugeType: steelseries.GaugeType.TYPE4,
+							pointerType: steelseries.PointerType.TYPE15,
+							backgroundColor: steelseries.BackgroundColor.BRUSHED_STAINLESS,                            
+							frameDesign: steelseries.FrameDesign.GLOSSY_METAL,                            
+							size: Dimens,
+//							section: sections,
+                            unitString: "Temp. ºC",
+							thresholdVisible: false,                            
+//							trendVisible: true,
+                            ledVisible: false,
+//							threshold: 40,
+                            lcdVisible: true,
+                            lcdDecimals: 1,
+							minValue: -10, 
+							maxValue: 50
+												});
+
+            Barometro = new steelseries.Radial('canvaspres', {
+                            gaugeType: steelseries.GaugeType.TYPE4,
+							pointerType: steelseries.PointerType.TYPE15,
+							backgroundColor: steelseries.BackgroundColor.BRUSHED_STAINLESS,                            
+							frameDesign: steelseries.FrameDesign.GLOSSY_METAL,                            
+                            size: Dimens,
+                            unitString: "Pres. hPa",
+							thresholdVisible: false,                            
+                            ledVisible: false,
+//                            threshold: 950,
+                            lcdVisible: true,
+                            lcdDecimals: 0,
+							minValue: 900, 
+							maxValue: 950
+												});
+
+            Higrometro = new steelseries.Radial('canvashum', {
+                            gaugeType: steelseries.GaugeType.TYPE4,
+							pointerType: steelseries.PointerType.TYPE15,
+							backgroundColor: steelseries.BackgroundColor.BRUSHED_STAINLESS,                            
+							frameDesign: steelseries.FrameDesign.GLOSSY_METAL,                            
+                            size: Dimens,
+                            unitString: "% Hum",
+							thresholdVisible: false,                            
+                            threshold: 100,
+                            ledVisible: false,
+                            lcdVisible: true,
+                            lcdDecimals: 1,
+							minValue: 0, 
+							maxValue: 100
+
+												});
+
+
+        	Compass = new steelseries.Compass('canvascompass', {
+							backgroundColor: steelseries.BackgroundColor.BRUSHED_STAINLESS,                            
+							frameDesign: steelseries.FrameDesign.GLOSSY_METAL,                            
+							size: Dimens,
+							transitionTime: 4000,		
+            				rotateFace: true
+        										});
+
+            Eolo = new steelseries.RadialBargraph('canvasvien', {
+                            gaugeType: steelseries.GaugeType.TYPE3,
+							backgroundColor: steelseries.BackgroundColor.BRUSHED_STAINLESS,                            
+							frameDesign: steelseries.FrameDesign.GLOSSY_METAL,                            
+                            size: Dimens,
+                            titleString: "Viento",                            
+                            unitString: "Km/h",
+                            threshold: 80,
+                            ledVisible: false,
+                            useSectionColors: true,							
+                            section: sectionsVie,
+                            lcdVisible: false,
+//                            lcdDecimals: 1,
+							minValue: 0, 
+							maxValue: 80
+
+												});
+
+
+
+
+//        setInterval(function(){ setValue(Termometro, 100); }, 4200);
+		setInterval(function(){ getReadings(); }, 2000);
+
+
+        }
+
+    function setValue(gauge, range) {   
+        gauge.setValueAnimated(range);
+    }  
+
+
+function getReadings(){
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var myObj = JSON.parse(this.responseText);
+      var Jtemp = myObj.Temp;
+      var Jhum = myObj.Hum;
+      var Jpres = myObj.Pres;
+      var Jvie = myObj.Viento * 3.6;
+      var Jdir = myObj.Dir;
+      var Gdir = 0;
+		setValue(Termometro, Jtemp);
+		setValue(Barometro, Jpres);		
+		setValue(Higrometro, Jhum);
+		setValue(Eolo, Jvie);
+			switch(Jdir) {
+			  case "N  ": Gdir = 0; break;
+			  case "NNE": Gdir = 22.5; break;
+			  case "NE ": Gdir = 45; break;
+			  case "ENE": Gdir = 67.5; break;
+			  case "E  ": Gdir = 90; break;
+			  case "ESE": Gdir = 112.5; break;
+			  case "SE ": Gdir = 135; break;
+			  case "SSE": Gdir = 157.5; break;
+			  case "S  ": Gdir = 180; break;
+			  case "SSO": Gdir = 202.5; break;			  
+			  case "SO ": Gdir = 225; break;
+			  case "OSO": Gdir = 245.5; break;
+			  case "O  ": Gdir = 270; break;
+			  case "ONO": Gdir = 292.5; break;
+			  case "NO ": Gdir = 315; break;
+			  case "NNO": Gdir = 337.5; break;
+			} 
+		setValue(Compass, Gdir)		
+    }
+  }; 
+  xhr.open("GET", "http://192.168.1.30/enl-tmp/meteoahora.json", true);
+  xhr.send();
+}
+
+// animate all gauges on a page
+//window.addEventListener('load', function() {
+//    setInterval( function() { getReadings(); }, 2000);
+//});
+
+
+    </script>
+  </head>
+  <body onload='init()' BGCOLOR="333333" TEXT="cccccc">
+    <table style="size=100%; align: center">
+	<tr><td>
+    <canvas id='canvastemp' width='200' height='200'>
+      No canvas in your browser...sorry...
+    </canvas>
+    <canvas id='canvaspres' width='200' height='200'>
+    </canvas>
+    <canvas id='canvashum' width='200' height='200'>
+    </canvas>
+    <canvas id='canvascompass' width='200' height='200'>
+    </canvas>
+   <canvas id='canvasvien' width='200' height='200'>
+    </canvas>
+	</td>
+	</tr>
+    </table>
+</body>
+</html>
